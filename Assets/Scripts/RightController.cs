@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RightController : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class RightController : MonoBehaviour
     public string uiTag = "UI";
 
     private LineRenderer lineRenderer;
+    private UIButtonHandler uiButtonHandler;
+
     // private InteractableHighlight currentTarget;
     // private ObjectInteractionHandler currentInteractionHandler;
 
@@ -19,6 +22,12 @@ public class RightController : MonoBehaviour
         lineRenderer.startWidth = 0.01f;
         lineRenderer.endWidth = 0.01f;
         lineRenderer.material = new Material(Shader.Find("Unlit/Color")) { color = Color.red };
+
+        uiButtonHandler = FindObjectOfType<UIButtonHandler>();
+        if (uiButtonHandler == null)
+        {
+            Debug.LogError("UIButtonHandler no encontrado en la escena.");
+        }
     }
 
     void Update()
@@ -88,6 +97,15 @@ public class RightController : MonoBehaviour
             else if (hit.collider.CompareTag(uiTag))
             {
                 lineRenderer.material.color = Color.blue;
+
+                if (OVRInput.GetDown(OVRInput.Button.One)) // A button
+                {
+                    Button button = hit.collider.GetComponent<Button>();
+                    if (button != null && uiButtonHandler != null)
+                    {
+                        uiButtonHandler.HandleButtonClick(button.name);
+                    }
+                }
             }
             else
             {
