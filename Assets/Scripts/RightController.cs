@@ -11,10 +11,6 @@ public class RightController : MonoBehaviour
     public string uiTag = "UI";
 
     private LineRenderer lineRenderer;
-    private UIButtonHandler uiButtonHandler;
-
-    // private InteractableHighlight currentTarget;
-    // private ObjectInteractionHandler currentInteractionHandler;
 
     void Start()
     {
@@ -22,12 +18,6 @@ public class RightController : MonoBehaviour
         lineRenderer.startWidth = 0.01f;
         lineRenderer.endWidth = 0.01f;
         lineRenderer.material = new Material(Shader.Find("Unlit/Color")) { color = Color.red };
-
-        uiButtonHandler = FindObjectOfType<UIButtonHandler>();
-        if (uiButtonHandler == null)
-        {
-            Debug.LogError("UIButtonHandler no encontrado en la escena.");
-        }
     }
 
     void Update()
@@ -40,104 +30,56 @@ public class RightController : MonoBehaviour
         Ray ray = new Ray(transform.position, transform.forward);
         RaycastHit hit;
 
-        // Create a layer mask that ignores UI elements
-        // int layerMask = interactableLayer.value & ~(1 << LayerMask.NameToLayer("UI"));
+        bool hitSuccess = Physics.Raycast(ray, out hit, maxDistance, interactableLayer);
 
-        if (Physics.Raycast(ray, out hit, maxDistance, interactableLayer))
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, hitSuccess ? hit.point : transform.position + transform.forward * maxDistance);
+
+        if (hitSuccess)
         {
-            lineRenderer.SetPosition(0, transform.position);
-            lineRenderer.SetPosition(1, hit.point);
-
             if (hit.collider.CompareTag(interactableTag))
             {
-                lineRenderer.material.color = Color.green;
-
-                // InteractableHighlight highlight = hit.collider.GetComponent<InteractableHighlight>();
-                // if (highlight != null)
-                // {
-                //     if (currentTarget != null && currentTarget != highlight)
-                //     {
-                //         currentTarget.RemoveHighlight();
-                //     }
-                //     highlight.Highlight();
-                //     currentTarget = highlight;
-                // }
-
-                if (OVRInput.GetDown(OVRInput.Button.One)) // A button
-                {
-                    IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-                    if (interactable != null) 
-                    {
-                        interactable.OnInteract(); // Llama al método específico del objeto
-                    }
-
-                    // ObjectInteractionHandler interactionHandler = hit.collider.GetComponent<ObjectInteractionHandler>();
-                    // if (interactionHandler != null)
-                    // {
-                    //     if (currentInteractionHandler != null && currentInteractionHandler != interactionHandler)
-                    //     {
-                    //         currentInteractionHandler.HideCanvas();
-                    //     }
-                    //     interactionHandler.OnInteract();
-                    //     currentInteractionHandler = interactionHandler;
-                    // }
-                    // else
-                    // {
-                    //     // If clicked on an interactable object without ObjectInteractionHandler, handle interaction normally
-                    //     if (currentInteractionHandler != null)
-                    //     {
-                    //         currentInteractionHandler.HideCanvas();
-                    //         currentInteractionHandler = null;
-                    //     }
-                    // }
-                    // Send interaction message to the object
-                    // hit.collider.gameObject.SendMessage("OnInteract", SendMessageOptions.DontRequireReceiver);
-                }
+                HandleObjectInteraction(hit);
             }
             else if (hit.collider.CompareTag(uiTag))
             {
-                lineRenderer.material.color = Color.blue;
-
-                if (OVRInput.GetDown(OVRInput.Button.One)) // A button
-                {
-                    Button button = hit.collider.GetComponent<Button>();
-                    if (button != null && uiButtonHandler != null)
-                    {
-                        uiButtonHandler.HandleButtonClick(button.name);
-                    }
-                }
+                HandleUIInteraction(hit);
             }
             else
             {
                 lineRenderer.material.color = Color.red;
-                // if (currentTarget != null)
-                // {
-                //     currentTarget.RemoveHighlight();
-                //     currentTarget = null;
-                // }
             }
         }
         else
         {
-            lineRenderer.SetPosition(0, transform.position);
-            lineRenderer.SetPosition(1, transform.position + transform.forward * maxDistance);
             lineRenderer.material.color = Color.red;
+        }
+    }
 
-            // if (currentTarget != null)
-            // {
-            //     currentTarget.RemoveHighlight();
-            //     currentTarget = null;
-            // }
+    void HandleObjectInteraction(RaycastHit hit)
+    {
+        lineRenderer.material.color = Color.green;
 
-            // If clicked on void space, hide current canvas
-            // if (OVRInput.GetDown(OVRInput.Button.One)) // A button
-            // {
-            //     if (currentInteractionHandler != null)
-            //     {
-            //         currentInteractionHandler.HideCanvas();
-            //         currentInteractionHandler = null;
-            //     }
-            // }
+        if (OVRInput.GetDown(OVRInput.Button.One))
+        {
+            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+            if (interactable != null) 
+            {
+                interactable.OnInteract();
+            }
+        }
+    }
+
+    void HandleUIInteraction(RaycastHit hit)
+    {
+        lineRenderer.material.color = Color.blue;
+        if (OVRInput.GetDown(OVRInput.Button.One))
+        {
+            Button button = hit.collider.GetComponent<Button>();
+            if (button != null)
+            {
+                button.onClick.Invoke();
+            }
         }
     }
 }
