@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class SphereInteractable : MonoBehaviour, IInteractable
 {
-    public GameObject canvasPrefab;  // Asigna el prefab del canvas en el Inspector
+    public GameObject canvasPrefab;
     private GameObject currentCanvas;
     private Transform cameraTransform;
 
     void Start()
     {
-        cameraTransform = Camera.main.transform; // Suponiendo que la cámara principal es el OVRCameraRig center eye anchor
+        cameraTransform = Camera.main.transform;
     }
 
     public void OnInteract()
@@ -20,19 +20,20 @@ public class SphereInteractable : MonoBehaviour, IInteractable
             Destroy(currentCanvas);
         }
 
-        // Instanciar el prefab del canvas en la posición del objeto
         currentCanvas = Instantiate(canvasPrefab, transform.position, Quaternion.identity);
-        currentCanvas.transform.SetParent(transform, false);  // Establecer el objeto como padre
+        currentCanvas.transform.SetParent(transform, false);
         PositionCanvas();
 
-        // Asignar eventos de clic de los botones
-        // AssignButtonEvents();
+        UIButtonHandler uiButtonHandler = currentCanvas.GetComponentInChildren<UIButtonHandler>();
+        if (uiButtonHandler != null)
+        {
+            uiButtonHandler.sphere = this;
+        }
     }
 
     void PositionCanvas()
     {
-        // Posicionar el canvas ligeramente encima del objeto
-        currentCanvas.transform.localPosition = new Vector3(0, 0, 0); // Ajusta según sea necesario
+        currentCanvas.transform.localPosition = new Vector3(0, 0, 0);
         UpdateCanvasRotation();
     }
 
@@ -46,9 +47,8 @@ public class SphereInteractable : MonoBehaviour, IInteractable
 
     void UpdateCanvasRotation()
     {
-        // Hacer que el canvas mire hacia la cámara
         Vector3 directionToCamera = currentCanvas.transform.position - cameraTransform.position;
-        directionToCamera.y = 0; // Mantener el canvas vertical
+        directionToCamera.y = 0;
         currentCanvas.transform.rotation = Quaternion.LookRotation(directionToCamera);
     }
 
@@ -58,5 +58,14 @@ public class SphereInteractable : MonoBehaviour, IInteractable
         {
             Destroy(currentCanvas);
         }
+    }
+
+    public void DestroySphereAndUI()
+    {
+        if (currentCanvas != null)
+        {
+            Destroy(currentCanvas);
+        }
+        Destroy(gameObject);
     }
 }
