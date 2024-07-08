@@ -7,6 +7,7 @@ public class RightController : MonoBehaviour
     public float maxDistance = 10.0f;
     public LayerMask interactableLayer;
     public string interactableTag = "Interactable";
+    public string uiTag = "UI";
 
     private LineRenderer lineRenderer;
     // private InteractableHighlight currentTarget;
@@ -83,6 +84,10 @@ public class RightController : MonoBehaviour
                     // Send interaction message to the object
                     // hit.collider.gameObject.SendMessage("OnInteract", SendMessageOptions.DontRequireReceiver);
                 }
+            }
+            else if (hit.collider.CompareTag(uiTag))
+            {
+                lineRenderer.material.color = Color.blue;
             }
             else
             {
