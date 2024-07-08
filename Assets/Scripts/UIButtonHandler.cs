@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class UIButtonHandler : MonoBehaviour
 {
+    public SphereInteractable sphere;
     public void HandleButtonClick(string buttonName)
     {
         switch (buttonName)
@@ -16,7 +17,10 @@ public class UIButtonHandler : MonoBehaviour
                 Debug.Log("Edit button clicked");
                 break;
             case "dropButton":
-                Debug.Log("Drop button clicked");
+                if (sphere != null)
+                {
+                    sphere.DestroySphereAndUI(); 
+                }
                 break;
             default:
                 Debug.Log("Unknown button clicked");
