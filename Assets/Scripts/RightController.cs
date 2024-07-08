@@ -31,7 +31,7 @@ public class RightController : MonoBehaviour
         RaycastHit hit;
 
         // Create a layer mask that ignores UI elements
-        int layerMask = interactableLayer.value & ~(1 << LayerMask.NameToLayer("UI"));
+        // int layerMask = interactableLayer.value & ~(1 << LayerMask.NameToLayer("UI"));
 
         if (Physics.Raycast(ray, out hit, maxDistance, interactableLayer))
         {
@@ -53,30 +53,36 @@ public class RightController : MonoBehaviour
                 //     currentTarget = highlight;
                 // }
 
-                // if (OVRInput.GetDown(OVRInput.Button.One)) // A button
-                // {
-                //     ObjectInteractionHandler interactionHandler = hit.collider.GetComponent<ObjectInteractionHandler>();
-                //     if (interactionHandler != null)
-                //     {
-                //         if (currentInteractionHandler != null && currentInteractionHandler != interactionHandler)
-                //         {
-                //             currentInteractionHandler.HideCanvas();
-                //         }
-                //         interactionHandler.OnInteract();
-                //         currentInteractionHandler = interactionHandler;
-                //     }
-                //     else
-                //     {
-                //         // If clicked on an interactable object without ObjectInteractionHandler, handle interaction normally
-                //         if (currentInteractionHandler != null)
-                //         {
-                //             currentInteractionHandler.HideCanvas();
-                //             currentInteractionHandler = null;
-                //         }
-                //     }
-                //     // Send interaction message to the object
-                //     hit.collider.gameObject.SendMessage("OnInteract", SendMessageOptions.DontRequireReceiver);
-                // }
+                if (OVRInput.GetDown(OVRInput.Button.One)) // A button
+                {
+                    IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+                    if (interactable != null) 
+                    {
+                        interactable.OnInteract(); // Llama al método específico del objeto
+                    }
+
+                    // ObjectInteractionHandler interactionHandler = hit.collider.GetComponent<ObjectInteractionHandler>();
+                    // if (interactionHandler != null)
+                    // {
+                    //     if (currentInteractionHandler != null && currentInteractionHandler != interactionHandler)
+                    //     {
+                    //         currentInteractionHandler.HideCanvas();
+                    //     }
+                    //     interactionHandler.OnInteract();
+                    //     currentInteractionHandler = interactionHandler;
+                    // }
+                    // else
+                    // {
+                    //     // If clicked on an interactable object without ObjectInteractionHandler, handle interaction normally
+                    //     if (currentInteractionHandler != null)
+                    //     {
+                    //         currentInteractionHandler.HideCanvas();
+                    //         currentInteractionHandler = null;
+                    //     }
+                    // }
+                    // Send interaction message to the object
+                    // hit.collider.gameObject.SendMessage("OnInteract", SendMessageOptions.DontRequireReceiver);
+                }
             }
             else
             {
