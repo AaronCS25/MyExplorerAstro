@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerMovementController : MonoBehaviour
 {
-    public OVRCameraRig cameraRig;  // Referencia al OVRCameraRig
+    // public OVRCameraRig cameraRig;  // Referencia al OVRCameraRig
     public CharacterController playerController; // Referencia al CharacterController del Player
 
     public float moveSpeed = 5f;    // Velocidad de movimiento
@@ -31,6 +31,6 @@ public class PlayerMovementController : MonoBehaviour
 
         // Rotación con el joystick derecho (aplicado al CameraRig)
         Vector2 rightJoystick = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch);
-        cameraRig.transform.Rotate(0, rightJoystick.x * rotationSpeed * Time.deltaTime, 0);
+        playerController.transform.Rotate(0, rightJoystick.x * rotationSpeed * Time.deltaTime, 0);
     }
 }
