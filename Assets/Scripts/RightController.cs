@@ -11,6 +11,10 @@ public class RightController : MonoBehaviour
     public string uiTag = "UI";
 
     private LineRenderer lineRenderer;
+    private GameObject objectBeingMoved;
+    private Vector3 fixedRayEnd;
+    private bool isMovingObject = false;
+    private float objectDistance;
 
     void Start()
     {
@@ -22,7 +26,54 @@ public class RightController : MonoBehaviour
 
     void Update()
     {
-        HandleInteraction();
+        HandleButtonPress();
+
+        if (isMovingObject)
+        {
+            MoveObject();
+        }
+        else
+        {
+            HandleInteraction();
+        }
+    }
+
+    void HandleButtonPress()
+    {
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+        {
+            if (!isMovingObject)
+            {
+                Ray ray = new Ray(transform.position, transform.forward);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, maxDistance, interactableLayer) && hit.collider.CompareTag(interactableTag))
+                {
+                    StartMovingObject(hit);
+                }
+            }
+            else
+            {
+                StopMovingObject();
+            }
+        }
+
+        // Manejo del botón A (OVRInput.Button.One)
+        if (OVRInput.GetDown(OVRInput.Button.One))
+        {
+            Ray ray = new Ray(transform.position, transform.forward);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, maxDistance, interactableLayer))
+            {
+                if (hit.collider.CompareTag(interactableTag))
+                {
+                    InteractWithObject(hit);
+                }
+                else if (hit.collider.CompareTag(uiTag))
+                {
+                    InteractWithUI(hit);
+                }
+            }
+        }
     }
 
     void HandleInteraction()
@@ -39,11 +90,11 @@ public class RightController : MonoBehaviour
         {
             if (hit.collider.CompareTag(interactableTag))
             {
-                HandleObjectInteraction(hit);
+                lineRenderer.material.color = Color.green;
             }
             else if (hit.collider.CompareTag(uiTag))
             {
-                HandleUIInteraction(hit);
+                lineRenderer.material.color = Color.blue;
             }
             else
             {
@@ -56,30 +107,55 @@ public class RightController : MonoBehaviour
         }
     }
 
-    void HandleObjectInteraction(RaycastHit hit)
+    void InteractWithObject(RaycastHit hit)
     {
-        lineRenderer.material.color = Color.green;
-
-        if (OVRInput.GetDown(OVRInput.Button.One))
+        IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+        if (interactable != null)
         {
-            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
-            if (interactable != null) 
-            {
-                interactable.OnInteract();
-            }
+            interactable.OnInteract();
+            Debug.Log("Interacted with object: " + hit.collider.gameObject.name);
         }
     }
 
-    void HandleUIInteraction(RaycastHit hit)
+    void InteractWithUI(RaycastHit hit)
     {
-        lineRenderer.material.color = Color.blue;
-        if (OVRInput.GetDown(OVRInput.Button.One))
+        Button button = hit.collider.GetComponent<Button>();
+        if (button != null)
         {
-            Button button = hit.collider.GetComponent<Button>();
-            if (button != null)
-            {
-                button.onClick.Invoke();
-            }
+            button.onClick.Invoke();
+            Debug.Log("Clicked UI button: " + button.name);
+        }
+    }
+
+    void StartMovingObject(RaycastHit hit)
+    {
+        objectBeingMoved = hit.collider.gameObject;
+        fixedRayEnd = hit.point;
+        objectDistance = hit.distance;
+        isMovingObject = true;
+        lineRenderer.material.color = Color.yellow;
+        Debug.Log("Started moving object: " + objectBeingMoved.name);
+    }
+
+    void StopMovingObject()
+    {
+        objectBeingMoved = null;
+        isMovingObject = false;
+        lineRenderer.material.color = Color.red;
+        Debug.Log("Stopped moving object");
+    }
+
+    void MoveObject()
+    {
+        if (objectBeingMoved != null)
+        {
+            Vector3 newPosition = transform.position + transform.forward * objectDistance;
+            objectBeingMoved.transform.position = newPosition;
+
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, newPosition);
+
+            Debug.Log("Moving object to: " + newPosition);
         }
     }
 }
